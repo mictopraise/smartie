@@ -1,0 +1,38 @@
+{
+  "team_id": "Smartie",
+  "domain": "corporate_enterprise",
+  "language_scope": ["en-NG"],
+  "african_alpha_claim": true,
+  "budget_laptop_claim": true,
+  "submitter": {
+    "name": "Oluwatosin_Micheal",
+    "email": "mictopraise@gmail.com",
+    "github_handle": "mictopraise"
+  },
+  "cross_disciplinary_pairing": {
+    "discipline": "financial_operations",
+    "load_bearing": true,
+    "description": "Smartie turns rough sales and payment records into offline customer communications and concrete next actions for connectivity-constrained African microbusinesses."
+  },
+  "test_prompts": [
+    {
+      "prompt_id": "tp_001",
+      "prompt": "You advise a one-person laundry business in Ibadan, Nigeria. Weekly facts: 38 orders, average order NGN 4,200, detergent and packaging NGN 61,000, delivery NGN 28,000, electricity and fuel NGN 35,000, two customers owe NGN 18,000 total, and the owner has only NGN 45,000 cash available. Calculate revenue before unpaid balances, listed operating costs, and the simple cash gap or surplus after those costs. Then give exactly three low-cost actions for the next seven days. State assumptions, keep all amounts in NGN, and do not invent market data."
+    },
+    {
+      "prompt_id": "tp_002",
+      "prompt": "Write two WhatsApp messages for a small fashion creator in Lagos whose customer has not paid a NGN 32,500 balance due yesterday. Version A should be warm and relationship-preserving; Version B should be firm but professional. Each must be under 55 words, include the exact amount, ask for a specific next step, avoid threats, and use clear Nigerian business English without slang."
+    }
+  ],
+  "model": {
+    "name": "Qwen2.5-1.5B-Instruct-Q4_K_M",
+    "runtime": "llama.cpp",
+    "quantization": "GGUF Q4_K_M",
+    "parameters_estimate": "1.54B",
+    "packaging": "binary_bundle"
+  },
+  "_runtime": {
+    "model_path": "model/qwen2.5-1.5b-instruct-q4_k_m.gguf"
+  }
+}
+
