@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.1.0",
+  "profiler_version": "adtc-profiler 0.1.0",
+  "submission": {
+    "team_id": "Smartie",
+    "domain": "corporate_enterprise",
+    "language_scope": [
+      "en-NG"
+    ],
+    "african_alpha_claim": true,
+    "budget_laptop_claim": true,
+    "submitter": {
+      "name": "Oluwatosin_Micheal",
+      "email": "mictopraise@gmail.com",
+      "github_handle": "mictopraise"
+    },
+    "cross_disciplinary_pairing": {
+      "discipline": "financial_operations",
+      "load_bearing": true,
+      "description": "Smartie turns rough sales and payment records into offline customer communications and concrete next actions for connectivity-constrained African microbusinesses."
+    },
+    "test_prompts": [
+      {
+        "prompt_id": "tp_001",
+        "prompt": "Create exactly three numbered actions for the next seven days for a one-person laundry business in Ibadan. Supplied facts: two customers owe NGN 18,000 total; NGN 45,000 cash is currently available; expense categories are detergent and packaging, delivery, and electricity and fuel. Action 1 must address collecting the unpaid balance. Action 2 must address prioritising the listed expenses. Action 3 must address recording orders, payments, and costs. Each action must be under 35 words. Use only supplied facts. Do not introduce names, percentages, discounts, loans, new amounts, deadlines, or market claims."
+      },
+      {
+        "prompt_id": "tp_002",
+        "prompt": "Write exactly two outgoing WhatsApp messages and nothing else. Label them Version A and Version B. You are the fashion creator requesting payment from the customer; do not write any customer response or dialogue. The customer has not paid a NGN 32,500 balance due yesterday. Version A must be warm and relationship-preserving. Version B must be firm but professional. Each message must be under 55 words, contain NGN 32,500, request payment or a payment update, avoid threats, and use clear Nigerian business English without slang."
+      }
+    ],
+    "model": {
+      "name": "Qwen2.5-1.5B-Instruct-Q4_K_M",
+      "runtime": "llama.cpp",
+      "quantization": "GGUF Q4_K_M",
+      "parameters_estimate": "1.78B",
+      "packaging": "binary_bundle"
+    }
+  },
+  "environment": {
+    "measured_on": "participant_laptop",
+    "cpu_model": "Intel(R) Core(TM) i5-8250U CPU @ 1.60GHz",
+    "ram_gb": 15.9,
+    "gpu": "none",
+    "os": "Ubuntu 26.04 LTS"
+  },
+  "throughput": {
+    "tokens_per_second_generation": 17.98,
+    "first_token_latency_ms": 10318.51,
+    "prompt_tokens": 512,
+    "generated_tokens": 128
+  },
+  "memory": {
+    "peak_rss_mb": 1704.34,
+    "steady_state_rss_mb": 1637.85,
+    "peak_vms_mb": 2321.03
+  },
+  "accuracy": [
+    {
+      "benchmark": "arc_easy",
+      "dataset_version": "lm-eval-harness",
+      "language": "en",
+      "samples": 50,
+      "score": 0.74,
+      "metric": "acc_norm"
+    }
+  ],
+  "cpu_thermal": {
+    "cpu_percent_p99": 68.4,
+    "core_temp_c_peak": null,
+    "throttled": false
+  },
+  "reproducibility": {
+    "git_commit_sha": "c7cbe8bc625d",
+    "docker_image_digest": "unknown",
+    "random_seed": 42
+  },
+  "model_info": {
+    "params_count": 1777088000,
+    "context_length": 32768,
+    "architecture": "qwen2",
+    "claimed_params_estimate": "1.78B",
+    "params_match": true
+  }
+}

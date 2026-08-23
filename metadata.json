@@ -17,22 +17,21 @@
   "test_prompts": [
     {
       "prompt_id": "tp_001",
-      "prompt": "You advise a one-person laundry business in Ibadan, Nigeria. Weekly facts: 38 orders, average order NGN 4,200, detergent and packaging NGN 61,000, delivery NGN 28,000, electricity and fuel NGN 35,000, two customers owe NGN 18,000 total, and the owner has only NGN 45,000 cash available. Calculate revenue before unpaid balances, listed operating costs, and the simple cash gap or surplus after those costs. Then give exactly three low-cost actions for the next seven days. State assumptions, keep all amounts in NGN, and do not invent market data."
+      "prompt": "Create exactly three numbered actions for the next seven days for a one-person laundry business in Ibadan. Supplied facts: two customers owe NGN 18,000 total; NGN 45,000 cash is currently available; expense categories are detergent and packaging, delivery, and electricity and fuel. Action 1 must address collecting the unpaid balance. Action 2 must address prioritising the listed expenses. Action 3 must address recording orders, payments, and costs. Each action must be under 35 words. Use only supplied facts. Do not introduce names, percentages, discounts, loans, new amounts, deadlines, or market claims."
     },
     {
       "prompt_id": "tp_002",
-      "prompt": "Write two WhatsApp messages for a small fashion creator in Lagos whose customer has not paid a NGN 32,500 balance due yesterday. Version A should be warm and relationship-preserving; Version B should be firm but professional. Each must be under 55 words, include the exact amount, ask for a specific next step, avoid threats, and use clear Nigerian business English without slang."
+      "prompt": "Write exactly two outgoing WhatsApp messages and nothing else. Label them Version A and Version B. You are the fashion creator requesting payment from the customer; do not write any customer response or dialogue. The customer has not paid a NGN 32,500 balance due yesterday. Version A must be warm and relationship-preserving. Version B must be firm but professional. Each message must be under 55 words, contain NGN 32,500, request payment or a payment update, avoid threats, and use clear Nigerian business English without slang."
     }
   ],
   "model": {
     "name": "Qwen2.5-1.5B-Instruct-Q4_K_M",
     "runtime": "llama.cpp",
     "quantization": "GGUF Q4_K_M",
-    "parameters_estimate": "1.54B",
+    "parameters_estimate": "1.78B",
     "packaging": "binary_bundle"
   },
   "_runtime": {
     "model_path": "model/qwen2.5-1.5b-instruct-q4_k_m.gguf"
   }
 }
-

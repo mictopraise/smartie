@@ -1,13 +1,13 @@
 # Smartie — Technical Report
 
-**Team ID:** pending registered-team metadata  
+**Team ID:** Smartie (must match the organizer-issued identifier)  
 **Domain:** Corporate / Enterprise  
 **Model:** Qwen2.5-1.5B-Instruct-Q4_K_M  
-**Status:** Gate 1 baseline; hardware telemetry pending
+**Status:** Gate 1 baseline; full participant profiler run completed
 
 ## Problem
 
-African micro and small businesses often conduct sales, support, and collections through messaging while operating with intermittent connectivity, limited software budgets, and commodity laptops. A cloud-only assistant can be unavailable at the exact moment an owner needs to answer a customer or reason over a few operating figures. It can also require sending sensitive commercial details to a remote service.
+African micro and small businesses often conduct sales, support, and collections through messaging while operating with intermittent connectivity, limited software budgets, and commodity laptops. A cloud-only assistant can be unavailable at the exact moment an owner needs to answer a customer or organize immediate operating actions. It can also require sending sensitive commercial details to a remote service.
 
 Smartie is deliberately narrow. It turns facts supplied by a business owner into four outputs: a customer reply, low-cost marketing copy, a payment follow-up, or a short operating plan. It does not retrieve live data and does not invent prices, laws, exchange rates, or market statistics. The immediate target is an English-speaking Nigerian microbusiness or independent creator, while the design applies to similar connectivity-constrained businesses across Africa.
 
@@ -25,9 +25,9 @@ Q4_K_M is approximately 1.12 GB on disk. It was selected as the initial compromi
 
 ### Prompt and application design
 
-`smartie.py` is a zero-dependency wrapper around `llama-cli`. A fixed system policy tells the model to use only supplied facts, preserve currency, expose assumptions, keep output short, and check arithmetic. Four task policies reduce ambiguity without fine-tuning. Inference is deterministic enough for demonstrations (`temperature=0.2`, seed 42), CPU-only (`-ngl 0`), capped at a 2,048-token context and 220 generated tokens, and limited to at most four threads by default.
+`smartie.py` is a zero-dependency wrapper around `llama-cli`. A fixed system policy tells the model to use only supplied facts, preserve currency, expose assumptions, and keep output short. Four task policies reduce ambiguity without fine-tuning. Inference is deterministic enough for demonstrations (`temperature=0.2`, seed 42), CPU-only (`-ngl 0`), capped at a 2,048-token context and 220 generated tokens, and limited to at most four threads by default.
 
-The two submitted prompts test different Corporate / Enterprise capabilities. One tests arithmetic, prioritisation, and instruction compliance using a Nigerian laundry-business scenario. The other tests tone control, exact factual preservation, and concise customer communication for a Lagos creator. Hidden prompts remain important; the assistant policy is generic rather than tailored only to the two visible prompts.
+The two submitted prompts test different Corporate / Enterprise capabilities. One tests prioritisation and instruction compliance using a Nigerian laundry-business scenario. The other tests tone control, exact factual preservation, and concise customer communication for a Lagos creator. Smartie is intentionally not presented as a financial calculator: informal testing exposed unreliable multi-step arithmetic in this model class, so the Gate 1 scope is operating checklists and business communication.
 
 ## Constraints
 
@@ -45,27 +45,28 @@ The two submitted prompts test different Corporate / Enterprise capabilities. On
 | SmolLM2 135M | Very high throughput and very low RAM | Quality risk is too high for multi-constraint business responses |
 | Qwen2.5 0.5B | Faster and smaller | Likely weaker arithmetic, planning, and tone control |
 | Qwen2.5 1.5B Q5_K_M | Possible quality retention | Must justify extra memory/bandwidth with measured output gains |
-| 3B–4B Q4 model | Better general capability | Lower CPU throughput and less thermal/RAM margin |
+| Qwen2.5 3B Q4_K_M | Potentially better general capability | Informal participant tests fell to roughly 8–9 generation tokens/s and did not improve constraint compliance consistently |
 | Fine-tuned 1.5B model | Better domain fit | Not credible before Gate 1 without a curated, licensed dataset and controlled evaluation |
 
 ## Benchmarks
 
-No hardware-dependent results are claimed yet. The model has not been profiled on the submitter's intended laptop, and fabricated or cross-machine figures would be misleading.
-
-Run the official participant profiler and replace only the `PENDING` cells below with values from `submission.json`:
+The following values come from a complete official ADTC participant-profiler run. The run used WSL1 on Ubuntu 26.04 LTS rather than the organizer's Ubuntu 22.04 audit image, so they are honest participant measurements, not a prediction of final audit hardware performance.
 
 | Metric | Measured value |
 |---|---|
-| Machine / CPU / OS | PENDING — participant to record |
-| Physical RAM | PENDING — participant to record |
-| Peak RSS | PENDING — `memory.peak_rss_mb` |
-| Steady-state RSS | PENDING — `memory.steady_state_rss_mb` |
-| Generation throughput | PENDING — `throughput.tokens_per_second_generation` |
-| First-token latency | PENDING — `throughput.first_token_latency_ms` |
-| Peak CPU temperature | PENDING — profiler thermal block |
-| Thermal throttling | PENDING — profiler thermal block |
+| Machine / CPU / OS | Intel Core i5-8250U @ 1.60 GHz / Ubuntu 26.04 LTS under WSL1 |
+| Physical RAM | 15.9 GB reported by profiler |
+| Peak RSS | 1,704.34 MB (about 1.66 GiB) |
+| Steady-state RSS | 1,637.85 MB |
+| Generation throughput | 17.98 tokens/s |
+| First-token latency | 10,318.51 ms |
+| Accuracy | ARC-Easy, 50 samples: 0.74 `acc_norm` |
+| Peak CPU temperature | Unavailable in this WSL1 environment (`null`) |
+| Thermal throttling | `false` |
+| Self-reported performance score (Sperf) | 100.00 |
+| Self-reported efficiency score (Seff) | 76.22 |
 
-The final Gate 1 run must be performed with the official ADTC profiler in participant mode. A smoke run may use `--skip-accuracy`; the retained final telemetry should come from a full run. Devpost's self-reported performance and efficiency fields must be computed from the organizer's current formulas and entered as separate plain numbers.
+The profiler reported 1,777,088,000 parameters and confirmed that the declared 1.78B estimate matches. `Sperf` uses the profiler README formula `min(17.98 / 15, 1) × 100`; `Seff` uses `max(0, (7 - (1704.34 / 1024)) / 7) × 100`. The full `submission.json` should be retained with the repository submission artifacts.
 
 ## Reproducibility
 
@@ -76,5 +77,3 @@ The final Gate 1 run must be performed with the official ADTC profiler in partic
 5. Run `bash run_profiler.sh` to create `submission.json` on the participant laptop.
 
 Model weights are excluded from Git. Inference contains no network code or external service dependency.
-
-

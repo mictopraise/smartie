@@ -16,8 +16,8 @@ DEFAULT_MODEL = ROOT / "model" / "qwen2.5-1.5b-instruct-q4_k_m.gguf"
 TASKS = {
     "reply": "Write a concise customer message. Preserve trust, include concrete facts, and end with one clear next step.",
     "market": "Create practical marketing copy for the stated channel and audience. Avoid unsupported claims and expensive tactics.",
-    "plan": "Turn the facts into a short operating plan with priorities, owners if known, and measurable next actions.",
-    "payment": "Draft a respectful payment follow-up. Preserve the relationship, state exact amounts and dates, and request a specific action.",
+    "plan": "Create the requested operating checklist using only supplied facts. Follow requested action counts and word limits exactly. Do not invent people, prices, percentages, discounts, deadlines, loans, market data, or facts.",
+    "payment": "Write only the requested outgoing message or messages as the business owner to the customer who owes the money. Never simulate dialogue or customer replies. Never invent deadlines, earlier contact attempts, discounts, or payment plans. Preserve the relationship, retain exact supplied amounts and dates, and request a specific action.",
 }
 
 SYSTEM = """You are Smartie, an offline assistant for African micro and small businesses.
@@ -41,11 +41,7 @@ def find_llama_cli(explicit: str | None) -> str:
 
 
 def build_prompt(task: str, user_text: str) -> str:
-    return (
-        "<|im_start|>system\n" + SYSTEM + "<|im_end|>\n"
-        "<|im_start|>user\nTask: " + TASKS[task] + "\n\n" + user_text.strip() +
-        "<|im_end|>\n<|im_start|>assistant\n"
-    )
+    return "Task: " + TASKS[task] + "\n\n" + user_text.strip()
 
 
 def main() -> int:
@@ -66,10 +62,10 @@ def main() -> int:
 
     command = [
         find_llama_cli(args.llama_cli), "-m", str(args.model),
-        "-p", build_prompt(args.task, text), "-n", str(args.max_tokens),
+        "-sys", SYSTEM, "-p", build_prompt(args.task, text), "-n", str(args.max_tokens),
         "-c", "2048", "-t", str(args.threads), "-ngl", "0",
         "--temp", "0.2", "--top-p", "0.9", "--seed", "42",
-        "--no-display-prompt", "--no-conversation",
+        "--no-display-prompt", "--single-turn", "--simple-io",
     ]
     completed = subprocess.run(command, check=False)
     return completed.returncode
@@ -77,5 +73,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
