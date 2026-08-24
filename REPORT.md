@@ -3,7 +3,9 @@
 **Team ID:** Smartie (must match the organizer-issued identifier)  
 **Domain:** Corporate / Enterprise  
 **Model:** Qwen2.5-1.5B-Instruct-Q4_K_M  
-**Status:** Gate 1 baseline; full participant profiler run completed
+**Status:** Gate 1 submitted; repository snapshot archived  
+**Devpost:** https://devpost.com/software/smartie  
+**Video demo:** https://www.youtube.com/watch?v=t-9x1-0f17Y
 
 ## Problem
 
@@ -77,3 +79,11 @@ The profiler reported 1,777,088,000 parameters and confirmed that the declared 1
 5. Run `bash run_profiler.sh` to create `submission.json` on the participant laptop.
 
 Model weights are excluded from Git. Inference contains no network code or external service dependency.
+
+## Gate 1 closure
+
+Smartie was submitted to the Africa Deep Tech Challenge 2026 with the two prompts recorded in `metadata.json` and `submission.json`. The profiler artifact is retained unchanged as the evidence from the participant-laptop run.
+
+Known limitation: Smartie's small local model is scoped to constrained business writing and operating checklists. Numerical results and any legal, accounting, medical, or financial content require human verification.
+
+Potential work after organizer feedback includes Android feasibility research, deterministic output validation, a simpler user interface, and a physical Ubuntu 22.04 / 8 GB retest. These future changes are outside the archived Gate 1 snapshot.
