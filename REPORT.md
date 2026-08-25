@@ -1,6 +1,6 @@
 # Smartie — Technical Report
 
-**Team ID:** Smartie (must match the organizer-issued identifier)  
+**Team ID:** `smartie` (Devpost project ID)  
 **Domain:** Corporate / Enterprise  
 **Model:** Qwen2.5-1.5B-Instruct-Q4_K_M  
 **Status:** Gate 1 submitted; repository snapshot archived  
