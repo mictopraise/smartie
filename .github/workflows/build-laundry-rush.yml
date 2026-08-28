@@ -13,8 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.4
+    env:
+      HOME: /root
     steps:
       - uses: actions/checkout@v4
+      - name: Verify Godot Android environment
+        run: |
+          godot --version
+          java -version
+          ls -la /root/.local/share/godot/export_templates/4.4.stable || true
+          ls -la /root/.android || true
       - name: Prepare build folder
         run: mkdir -p laundry-rush/build
       - name: Export Android debug APK
