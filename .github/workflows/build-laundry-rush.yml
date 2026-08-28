@@ -18,14 +18,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Android SDK 34 requirements
+      - name: Install full Godot 4.4 Android toolchain
         run: |
           yes | sdkmanager --sdk_root=/usr/lib/android-sdk \
             "platform-tools" \
             "build-tools;34.0.0" \
-            "platforms;android-34" || true
+            "platforms;android-34" \
+            "cmake;3.10.2.4988404" \
+            "ndk;23.2.8568313"
+          echo "--- Build tools ---"
           ls -la /usr/lib/android-sdk/build-tools
+          echo "--- Platforms ---"
           ls -la /usr/lib/android-sdk/platforms
+          echo "--- CMake ---"
+          ls -la /usr/lib/android-sdk/cmake || true
+          echo "--- NDK ---"
+          ls -la /usr/lib/android-sdk/ndk || true
 
       - name: Verify Godot Android environment
         run: |
@@ -39,13 +47,25 @@ jobs:
       - name: Prepare build folder
         run: mkdir -p laundry-rush/build
 
+      - name: Validate project and print diagnostics
+        working-directory: laundry-rush
+        env:
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /root/debug.keystore
+          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
+          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
+        run: |
+          echo "--- export_presets.cfg ---"
+          cat export_presets.cfg
+          echo "--- Godot verbose project scan ---"
+          godot --headless --verbose --editor --quit --path . || true
+
       - name: Export Android debug APK
         working-directory: laundry-rush
         env:
           GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /root/debug.keystore
           GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
           GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
-        run: godot --headless --export-debug "Android" build/LaundryRush-debug.apk
+        run: godot --headless --verbose --export-debug "Android" build/LaundryRush-debug.apk
 
       - uses: actions/upload-artifact@v4
         with:
