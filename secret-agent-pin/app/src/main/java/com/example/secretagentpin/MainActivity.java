@@ -52,16 +52,66 @@ public class MainActivity extends Activity {
 
     private void evaluateCode(){
         boolean success=!copyMode || code.toString().equals(targetCode);
-        if(success){ stars++; starsText.setText("⭐ Missions: "+stars); successFeedback(); }
-        else { messageText.setText("Almost! Try that code again 😊"); vibrate(70); if(soundOn)tone.startTone(ToneGenerator.TONE_PROP_NACK,120); }
-        handler.postDelayed(()->{code.setLength(0); accepting=false; updateDots(); if(copyMode){if(success)newTarget(); else messageText.setText("Try: "+spaced(targetCode));} else messageText.setText("Ready — enter another code! 🔢");},700);
+        if(success){
+            stars++;
+            starsText.setText("⭐ Missions: "+stars);
+            runWorldInteraction();
+        } else {
+            messageText.setText("Almost! Try that code again 😊");
+            vibrate(70);
+            if(soundOn)tone.startTone(ToneGenerator.TONE_PROP_NACK,120);
+            handler.postDelayed(this::resetAfterAttempt,800);
+        }
     }
 
-    private void successFeedback(){
-        if(soundOn)tone.startTone(ToneGenerator.TONE_PROP_ACK,180); vibrate(120);
-        if(world.equals("space")) messageText.setText("ROCKET LAUNCHED! 🚀✨");
-        else if(world.equals("castle")) messageText.setText("CASTLE UNLOCKED! 🏰✨");
-        else messageText.setText("ACCESS GRANTED! 🕵️⭐");
+    private void runWorldInteraction(){
+        vibrate(120);
+        if(soundOn)tone.startTone(ToneGenerator.TONE_PROP_ACK,180);
+        messageText.animate().cancel();
+        messageText.setAlpha(1f);
+
+        if(world.equals("space")){
+            messageText.setText("LAUNCH SEQUENCE: 3... 2... 1... 🚀");
+            dotsText.setText("3   2   1   ✨");
+            handler.postDelayed(() -> {
+                messageText.setText("LIFTOFF! Mission launched! 🚀🌟");
+                dotsText.setText("🌍   ☁️   🚀   ✨");
+                bounce(messageText);
+                if(soundOn)tone.startTone(ToneGenerator.TONE_PROP_BEEP2,250);
+            },650);
+        } else if(world.equals("castle")){
+            messageText.setText("Casting the unlocking spell... ✨");
+            dotsText.setText("🔐   ✨   ✨   ✨");
+            handler.postDelayed(() -> {
+                messageText.setText("THE CASTLE GATES OPEN! 🏰👑");
+                dotsText.setText("🔓   ✨   🏰   👑");
+                bounce(messageText);
+                if(soundOn)tone.startTone(ToneGenerator.TONE_PROP_BEEP,250);
+            },650);
+        } else {
+            String[] files={"BLUE FOX","NIGHT OWL","GOLDEN STAR","SECRET MAP"};
+            String file=files[random.nextInt(files.length)];
+            messageText.setText("Decrypting secret mission... 🔐");
+            dotsText.setText("🕵️   🔐   📡   ...");
+            handler.postDelayed(() -> {
+                messageText.setText("MISSION FILE OPEN: "+file+" 🗂️⭐");
+                dotsText.setText("🕵️   🔓   📁   ⭐");
+                bounce(messageText);
+                if(soundOn)tone.startTone(ToneGenerator.TONE_PROP_ACK,250);
+            },650);
+        }
+        handler.postDelayed(this::resetAfterAttempt,1800);
+    }
+
+    private void bounce(View v){
+        v.setScaleX(0.88f); v.setScaleY(0.88f);
+        v.animate().scaleX(1f).scaleY(1f).setDuration(260).start();
+    }
+
+    private void resetAfterAttempt(){
+        code.setLength(0); accepting=false; updateDots();
+        if(copyMode){ newTarget(); }
+        else messageText.setText("Ready — enter another code! 🔢");
     }
 
     private void setWorld(String w){ world=w; code.setLength(0); accepting=false; updateDots();
@@ -82,6 +132,6 @@ public class MainActivity extends Activity {
     private void updateDots(){StringBuilder d=new StringBuilder();for(int i=0;i<4;i++){d.append(i<code.length()?"●":"○");if(i<3)d.append("  ");}if(dotsText!=null)dotsText.setText(d.toString());}
     private void playTone(String digit){if(!soundOn||tone==null)return; int n=Integer.parseInt(digit); tone.startTone(ToneGenerator.TONE_DTMF_0+n,70);}
     private void vibrate(long ms){Vibrator v=(Vibrator)getSystemService(VIBRATOR_SERVICE);if(v==null||!v.hasVibrator())return;if(android.os.Build.VERSION.SDK_INT>=26)v.vibrate(VibrationEffect.createOneShot(ms,VibrationEffect.DEFAULT_AMPLITUDE));else v.vibrate(ms);}
-    private void showParentInfo(){new AlertDialog.Builder(this).setTitle("Parent Zone 👨‍👩‍👧").setMessage("Parent Test Beta\n\n• Works offline\n• No account or login\n• No internet permission\n• No personal data collected by the app\n• No ads\n• Sound can be switched off\n\nPlease watch what your child enjoys and share feedback about ease of use, favourite mode, and anything confusing.").setPositiveButton("Got it",null).show();}
-    @Override protected void onDestroy(){if(tone!=null)tone.release();super.onDestroy();}
+    private void showParentInfo(){new AlertDialog.Builder(this).setTitle("Parent Zone 👨‍👩‍👧").setMessage("Separate Parent Test Beta\n\n• Installs beside the simple Secret Agent PIN app\n• Works offline\n• No account or login\n• No internet permission\n• No personal data collected by the app\n• No ads\n\nPlease compare this beta with the simple version and share which interface and interactions your child prefers.").setPositiveButton("Got it",null).show();}
+    @Override protected void onDestroy(){handler.removeCallbacksAndMessages(null);if(tone!=null)tone.release();super.onDestroy();}
 }
