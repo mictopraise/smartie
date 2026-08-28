@@ -17,17 +17,36 @@ jobs:
       HOME: /root
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Android SDK 34 requirements
+        run: |
+          yes | sdkmanager --sdk_root=/usr/lib/android-sdk \
+            "platform-tools" \
+            "build-tools;34.0.0" \
+            "platforms;android-34" || true
+          ls -la /usr/lib/android-sdk/build-tools
+          ls -la /usr/lib/android-sdk/platforms
+
       - name: Verify Godot Android environment
         run: |
           godot --version
           java -version
+          cat /root/.config/godot/editor_settings-4.4.tres || true
           ls -la /root/.local/share/godot/export_templates/4.4.stable || true
           ls -la /root/.android || true
+          ls -la /root/debug.keystore || true
+
       - name: Prepare build folder
         run: mkdir -p laundry-rush/build
+
       - name: Export Android debug APK
         working-directory: laundry-rush
+        env:
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /root/debug.keystore
+          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
+          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
         run: godot --headless --export-debug "Android" build/LaundryRush-debug.apk
+
       - uses: actions/upload-artifact@v4
         with:
           name: Laundry-Rush-APK
