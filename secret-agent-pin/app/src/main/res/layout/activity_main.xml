@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true" android:background="@color/bg">
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center_horizontal" android:padding="20dp">
+<TextView android:id="@+id/titleText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🕵️ SECRET AGENT HQ" android:textColor="@color/accent" android:textSize="24sp" android:textStyle="bold" android:layout_marginTop="16dp" />
+<TextView android:id="@+id/worldText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Mission: Secret Agent" android:textColor="@color/white" android:textSize="16sp" android:gravity="center" android:layout_marginTop="8dp" />
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginTop="10dp">
+<Button android:id="@+id/worldAgent" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="🕵 Agent" />
+<Button android:id="@+id/worldSpace" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="🚀 Space" />
+<Button android:id="@+id/worldCastle" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="🏰 Castle" />
+</LinearLayout>
+<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center" android:layout_marginTop="8dp">
+<Button android:id="@+id/modeFree" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="∞ Free Play" />
+<Button android:id="@+id/modeCopy" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="🧠 Copy Code" />
+</LinearLayout>
+<TextView android:id="@+id/promptText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Enter your secret code, Agent!" android:textColor="@color/white" android:textSize="18sp" android:gravity="center" android:layout_marginTop="14dp" />
+<TextView android:id="@+id/targetText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="" android:textColor="@color/accent" android:textSize="24sp" android:textStyle="bold" android:gravity="center" android:layout_marginTop="6dp" />
+<TextView android:id="@+id/dotsText" android:layout_width="match_parent" android:layout_height="68dp" android:text="○ ○ ○ ○" android:textColor="@color/accent2" android:textSize="34sp" android:gravity="center" android:layout_marginTop="10dp" android:background="@color/panel" />
+<TextView android:id="@+id/messageText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tap any 4 numbers" android:textColor="@color/white" android:textSize="16sp" android:gravity="center" android:layout_marginTop="10dp" android:layout_marginBottom="10dp" />
+<TextView android:id="@+id/starsText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="⭐ Missions: 0" android:textColor="@color/accent2" android:textSize="15sp" android:gravity="center" android:layout_marginBottom="8dp" />
+<GridLayout android:id="@+id/keypad" android:layout_width="match_parent" android:layout_height="wrap_content" android:columnCount="3" android:rowCount="4" android:alignmentMode="alignMargins" android:useDefaultMargins="true">
+<Button android:id="@+id/b1" style="@style/KeyButton" android:text="1"/><Button android:id="@+id/b2" style="@style/KeyButton" android:text="2"/><Button android:id="@+id/b3" style="@style/KeyButton" android:text="3"/>
+<Button android:id="@+id/b4" style="@style/KeyButton" android:text="4"/><Button android:id="@+id/b5" style="@style/KeyButton" android:text="5"/><Button android:id="@+id/b6" style="@style/KeyButton" android:text="6"/>
+<Button android:id="@+id/b7" style="@style/KeyButton" android:text="7"/><Button android:id="@+id/b8" style="@style/KeyButton" android:text="8"/><Button android:id="@+id/b9" style="@style/KeyButton" android:text="9"/>
+<Button android:id="@+id/backspace" style="@style/KeyButton" android:text="⌫"/><Button android:id="@+id/b0" style="@style/KeyButton" android:text="0"/><Button android:id="@+id/soundButton" style="@style/KeyButton" android:text="🔊"/>
+</GridLayout>
+<TextView android:id="@+id/parentText" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Parents: hold here for info" android:textColor="#9CA3AF" android:textSize="12sp" android:padding="12dp" android:layout_marginTop="10dp" />
+<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Offline pretend play • No account • No real password stored" android:textColor="#9CA3AF" android:textSize="11sp" android:layout_marginBottom="14dp" />
+</LinearLayout>
+</ScrollView>
