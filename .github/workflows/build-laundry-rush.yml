@@ -13,59 +13,59 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.4
-    env:
-      HOME: /root
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install full Godot 4.4 Android toolchain
+      - name: Normalize Godot CI home
+        run: |
+          echo "HOME=$HOME"
+          mkdir -p "$HOME/.config/godot"
+          mkdir -p "$HOME/.local/share/godot/export_templates"
+          cp -a /root/.config/godot/. "$HOME/.config/godot/"
+          cp -a /root/.local/share/godot/export_templates/4.4.stable "$HOME/.local/share/godot/export_templates/"
+          cp /root/debug.keystore "$HOME/debug.keystore"
+          sed -i "s#/root/debug.keystore#$HOME/debug.keystore#g" "$HOME/.config/godot/editor_settings-4.4.tres"
+          echo "--- Godot home config ---"
+          cat "$HOME/.config/godot/editor_settings-4.4.tres"
+          echo "--- Export templates ---"
+          ls -la "$HOME/.local/share/godot/export_templates/4.4.stable"
+          echo "--- Debug keystore ---"
+          ls -la "$HOME/debug.keystore"
+
+      - name: Install Godot 4.4 Android requirements
         run: |
           yes | sdkmanager --sdk_root=/usr/lib/android-sdk \
             "platform-tools" \
             "build-tools;34.0.0" \
-            "platforms;android-34" \
-            "cmake;3.10.2.4988404" \
-            "ndk;23.2.8568313"
-          echo "--- Build tools ---"
-          ls -la /usr/lib/android-sdk/build-tools
-          echo "--- Platforms ---"
-          ls -la /usr/lib/android-sdk/platforms
-          echo "--- CMake ---"
-          ls -la /usr/lib/android-sdk/cmake || true
-          echo "--- NDK ---"
-          ls -la /usr/lib/android-sdk/ndk || true
+            "platforms;android-34"
 
-      - name: Verify Godot Android environment
+      - name: Verify Android environment
         run: |
           godot --version
           java -version
-          cat /root/.config/godot/editor_settings-4.4.tres || true
-          ls -la /root/.local/share/godot/export_templates/4.4.stable || true
-          ls -la /root/.android || true
-          ls -la /root/debug.keystore || true
+          ls -la /usr/lib/android-sdk/build-tools/34.0.0
+          ls -la /usr/lib/android-sdk/platforms/android-34
 
       - name: Prepare build folder
         run: mkdir -p laundry-rush/build
 
-      - name: Validate project and print diagnostics
-        working-directory: laundry-rush
-        env:
-          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /root/debug.keystore
-          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
-          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
-        run: |
-          echo "--- export_presets.cfg ---"
-          cat export_presets.cfg
-          echo "--- Godot verbose project scan ---"
-          godot --headless --verbose --editor --quit --path . || true
-
       - name: Export Android debug APK
         working-directory: laundry-rush
         env:
-          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /root/debug.keystore
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /github/home/debug.keystore
           GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
           GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
-        run: godot --headless --verbose --export-debug "Android" build/LaundryRush-debug.apk
+        run: |
+          echo "--- Preset ---"
+          cat export_presets.cfg
+          echo "--- Export ---"
+          godot --headless --verbose --path . --export-debug "Android" build/LaundryRush-debug.apk
+
+      - name: Verify APK
+        run: |
+          test -f laundry-rush/build/LaundryRush-debug.apk
+          ls -lh laundry-rush/build/LaundryRush-debug.apk
 
       - uses: actions/upload-artifact@v4
         with:
