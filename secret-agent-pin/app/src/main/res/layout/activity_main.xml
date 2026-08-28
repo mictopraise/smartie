@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center_horizontal" android:padding="24dp" android:background="@color/bg">
+<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🕵️ SECRET AGENT HQ" android:textColor="@color/accent" android:textSize="24sp" android:textStyle="bold" android:layout_marginTop="24dp" />
+<TextView android:id="@+id/promptText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Enter your secret code, Agent!" android:textColor="@color/white" android:textSize="18sp" android:gravity="center" android:layout_marginTop="20dp" />
+<TextView android:id="@+id/dotsText" android:layout_width="match_parent" android:layout_height="72dp" android:text="○ ○ ○ ○" android:textColor="@color/accent2" android:textSize="34sp" android:gravity="center" android:layout_marginTop="18dp" android:background="@color/panel" />
+<TextView android:id="@+id/messageText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tap any 4 numbers" android:textColor="@color/white" android:textSize="16sp" android:gravity="center" android:layout_marginTop="14dp" android:layout_marginBottom="18dp" />
+<GridLayout android:id="@+id/keypad" android:layout_width="match_parent" android:layout_height="wrap_content" android:columnCount="3" android:rowCount="4" android:alignmentMode="alignMargins" android:useDefaultMargins="true">
+<Button android:id="@+id/b1" style="@style/KeyButton" android:text="1"/><Button android:id="@+id/b2" style="@style/KeyButton" android:text="2"/><Button android:id="@+id/b3" style="@style/KeyButton" android:text="3"/>
+<Button android:id="@+id/b4" style="@style/KeyButton" android:text="4"/><Button android:id="@+id/b5" style="@style/KeyButton" android:text="5"/><Button android:id="@+id/b6" style="@style/KeyButton" android:text="6"/>
+<Button android:id="@+id/b7" style="@style/KeyButton" android:text="7"/><Button android:id="@+id/b8" style="@style/KeyButton" android:text="8"/><Button android:id="@+id/b9" style="@style/KeyButton" android:text="9"/>
+<Button android:id="@+id/backspace" style="@style/KeyButton" android:text="⌫"/><Button android:id="@+id/b0" style="@style/KeyButton" android:text="0"/><Button android:id="@+id/enter" style="@style/KeyButton" android:text="✓"/>
+</GridLayout>
+<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Pretend play only • No real password is stored" android:textColor="#9CA3AF" android:textSize="12sp" android:layout_marginTop="22dp" />
+</LinearLayout>
