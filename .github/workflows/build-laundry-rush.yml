@@ -1,0 +1,26 @@
+name: Build Laundry Rush APK
+
+on:
+  push:
+    branches: [laundry-rush-build]
+    paths:
+      - 'laundry-rush/**'
+      - '.github/workflows/build-laundry-rush.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare build folder
+        run: mkdir -p laundry-rush/build
+      - name: Export Android debug APK
+        working-directory: laundry-rush
+        run: godot --headless --export-debug "Android" build/LaundryRush-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Laundry-Rush-APK
+          path: laundry-rush/build/LaundryRush-debug.apk
