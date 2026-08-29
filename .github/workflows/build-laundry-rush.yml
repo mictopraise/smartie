@@ -15,20 +15,18 @@ jobs:
       image: barichello/godot-ci:4.4
 
     env:
-      HOME: /github/home
+      HOME: /root
       ANDROID_HOME: /usr/lib/android-sdk
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare Godot CI home
+      - name: Prepare Android debug keystore
         run: |
-          mkdir -p "$HOME/.config/godot"
-          mkdir -p "$HOME/.local/share/godot/export_templates"
-          cp -a /root/.local/share/godot/export_templates/4.4.stable "$HOME/.local/share/godot/export_templates/"
-
+          mkdir -p "$HOME/.android"
+          rm -f "$HOME/.android/debug.keystore"
           keytool -genkeypair -v \
-            -keystore "$HOME/debug.keystore" \
+            -keystore "$HOME/.android/debug.keystore" \
             -storepass android \
             -alias androiddebugkey \
             -keypass android \
@@ -37,55 +35,33 @@ jobs:
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
 
-          cat > "$HOME/.config/godot/editor_settings-4.4.tres" <<EOF
-          [gd_resource type="EditorSettings" format=3]
-
-          [resource]
-          export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
-          export/android/android_sdk_path = "/usr/lib/android-sdk"
-          export/android/debug_keystore = "$HOME/debug.keystore"
-          export/android/debug_keystore_user = "androiddebugkey"
-          export/android/debug_keystore_pass = "android"
-          export/android/force_system_user = false
-          export/android/shutdown_adb_on_exit = false
-          EOF
-
-          echo "--- Godot editor settings ---"
-          cat "$HOME/.config/godot/editor_settings-4.4.tres"
-          echo "--- Export templates ---"
-          ls -la "$HOME/.local/share/godot/export_templates/4.4.stable"
-          echo "--- Debug keystore ---"
-          keytool -list -keystore "$HOME/debug.keystore" -storepass android -alias androiddebugkey
-
-      - name: Install complete Godot 4.4 Android toolchain
+      - name: Install Android SDK requirements
         run: |
           yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses >/dev/null || true
           yes | sdkmanager --sdk_root="$ANDROID_HOME" \
             "platform-tools" \
             "build-tools;34.0.0" \
-            "platforms;android-34" \
-            "cmake;3.10.2.4988404" \
-            "ndk;23.2.8568313"
+            "platforms;android-34"
 
-      - name: Verify Android environment
+      - name: Verify Godot Android environment
         run: |
           godot --version
           java -version
-          test -x "$ANDROID_HOME/platform-tools/adb"
-          test -x "$ANDROID_HOME/build-tools/34.0.0/apksigner"
+          test -f "$HOME/.local/share/godot/export_templates/4.4.stable/android_debug.apk"
           test -f "$ANDROID_HOME/platforms/android-34/android.jar"
-          test -d "$ANDROID_HOME/ndk/23.2.8568313"
-          echo "Android toolchain OK"
+          test -x "$ANDROID_HOME/build-tools/34.0.0/apksigner"
+          keytool -list -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey
+          echo "Godot Android environment OK"
+
+      - name: Import project once
+        working-directory: laundry-rush
+        run: godot --headless --editor --path . --quit
 
       - name: Prepare build folder
         run: mkdir -p laundry-rush/build
 
       - name: Export Android debug APK
         working-directory: laundry-rush
-        env:
-          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /github/home/debug.keystore
-          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
-          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
         run: |
           echo "--- Preset ---"
           cat export_presets.cfg
