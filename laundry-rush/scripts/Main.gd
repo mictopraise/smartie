@@ -1,7 +1,7 @@
 extends Node2D
 
 const PLAYER_SPEED = 310.0
-const INTERACT_DISTANCE = 110.0
+const INTERACT_DISTANCE = 115.0
 const PAYOUT = 180
 const FUEL_MAX = 100.0
 const FUEL_START = 65.0
@@ -10,12 +10,14 @@ const FUEL_BUY = 50.0
 const FUEL_COST = 100
 const DRAG_DEADZONE = 14.0
 const DRAG_MAX = 120.0
+const DOUBLE_TAP_WINDOW = 0.34
+const TAP_MOVE_TOLERANCE = 24.0
+const STATION_TAP_RADIUS = 95.0
 
 const SHOP_LEFT = 36.0
 const SHOP_TOP = 150.0
 const SHOP_RIGHT = 684.0
 const SHOP_BOTTOM = 1070.0
-
 const DROP_OFF = Vector2(120, 280)
 const WASHER = Vector2(185, 500)
 const DRYER = Vector2(535, 500)
@@ -29,6 +31,8 @@ var move_vector = Vector2.ZERO
 var drag_touch = -1
 var drag_origin = Vector2.ZERO
 var drag_current = Vector2.ZERO
+var last_tap_time = -10.0
+var last_tap_pos = Vector2.ZERO
 
 var carry_stage = ""
 var processing_station = ""
@@ -37,7 +41,6 @@ var process_total = 1.0
 var washer_output = ""
 var dryer_output = ""
 var iron_output = ""
-
 var dirty_waiting = true
 var customer_present = true
 var payment_ready = false
@@ -47,7 +50,6 @@ var cash = 0
 var gross_earned = 0
 var fuel_spent = 0
 var served = 0
-
 var grid_on = true
 var grid_timer = 24.0
 var generator_on = false
@@ -63,7 +65,7 @@ func _ready():
 	randomize()
 	grid_timer = randf_range(20.0, 30.0)
 	build_hud()
-	set_status("Customer waiting at DROP-OFF. Drag anywhere in the shop to move.")
+	set_status("Drag to move. Double-tap a nearby station to use it.")
 	refresh_hud()
 	queue_redraw()
 
@@ -92,16 +94,16 @@ func update_power(delta):
 		grid_on = not grid_on
 		if grid_on:
 			grid_timer = randf_range(22.0, 34.0)
-			set_status("NEPA/PHCN is back. Switch generator OFF to save fuel.")
+			set_status("NEPA/PHCN is back. Tap GENERATOR once if it is still running.")
 		else:
 			grid_timer = randf_range(14.0, 22.0)
-			set_status("BLACKOUT! Move to the generator and tap INTERACT.")
+			set_status("BLACKOUT! Tap GENERATOR once to switch backup power on.")
 	if generator_on:
 		fuel = max(0.0, fuel - FUEL_DRAIN * delta)
 		if fuel <= 0.0:
 			fuel = 0.0
 			generator_on = false
-			set_status("Generator fuel finished. Buy fuel or wait for NEPA/PHCN.")
+			set_status("Generator fuel finished. Double-tap BUY FUEL when you can afford it.")
 
 func has_power():
 	return grid_on or (generator_on and fuel > 0.0)
@@ -113,7 +115,7 @@ func update_processing(delta):
 	if processing_station == "washer": washer_output = "washed"
 	elif processing_station == "dryer": dryer_output = "dried"
 	elif processing_station == "iron": iron_output = "ironed"
-	set_status(station_title(processing_station) + " finished. Collect the basket.")
+	set_status(station_title(processing_station) + " finished. Follow the READY marker.")
 	processing_station = ""
 	process_left = 0.0
 
@@ -124,7 +126,7 @@ func update_customer(delta):
 		next_customer_timer = -1.0
 		customer_present = true
 		dirty_waiting = true
-		set_status("A new customer has arrived at DROP-OFF.")
+		set_status("New customer at DROP-OFF. Follow the READY marker.")
 
 func build_hud():
 	var canvas = CanvasLayer.new(); add_child(canvas)
@@ -135,13 +137,12 @@ func build_hud():
 	fuel_label = Label.new(); fuel_label.position = Vector2(475,58); fuel_label.size = Vector2(215,30); fuel_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT; fuel_label.add_theme_font_size_override("font_size",17); canvas.add_child(fuel_label)
 	objective_label = Label.new(); objective_label.position = Vector2(22,104); objective_label.size = Vector2(676,32); objective_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; objective_label.add_theme_font_size_override("font_size",16); canvas.add_child(objective_label)
 	var bottom_bg = ColorRect.new(); bottom_bg.color = Color(0.05,0.08,0.12,0.92); bottom_bg.position = Vector2(0,1075); bottom_bg.size = Vector2(720,205); canvas.add_child(bottom_bg)
-	status_label = Label.new(); status_label.position = Vector2(25,1090); status_label.size = Vector2(445,100); status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; status_label.add_theme_font_size_override("font_size",17); canvas.add_child(status_label)
-	var interact_button = Button.new(); interact_button.text = "INTERACT"; interact_button.position = Vector2(500,1120); interact_button.size = Vector2(185,105); interact_button.add_theme_font_size_override("font_size",22); interact_button.pressed.connect(try_interact); canvas.add_child(interact_button)
-	var hint = Label.new(); hint.text = "Drag anywhere to move"; hint.position = Vector2(25,1225); hint.size = Vector2(445,30); hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; hint.add_theme_font_size_override("font_size",15); canvas.add_child(hint)
+	status_label = Label.new(); status_label.position = Vector2(35,1100); status_label.size = Vector2(650,78); status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; status_label.add_theme_font_size_override("font_size",18); canvas.add_child(status_label)
+	var hint = Label.new(); hint.text = "DRAG TO MOVE  •  DOUBLE-TAP TO USE  •  GENERATOR = SINGLE TAP"; hint.position = Vector2(25,1200); hint.size = Vector2(670,35); hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; hint.add_theme_font_size_override("font_size",14); canvas.add_child(hint)
 
 func _input(event):
 	if event is InputEventKey:
-		if event.pressed and event.keycode == KEY_SPACE: try_interact()
+		if event.pressed and event.keycode == KEY_SPACE: try_interact_near_player()
 		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -152,20 +153,48 @@ func _input(event):
 				move_vector = Vector2.ZERO
 		else:
 			if event.index == drag_touch:
+				var release_pos = event.position
+				var travelled = release_pos.distance_to(drag_origin)
 				drag_touch = -1
 				move_vector = Vector2.ZERO
+				if travelled <= TAP_MOVE_TOLERANCE:
+					handle_tap(release_pos)
 				queue_redraw()
 	elif event is InputEventScreenDrag and event.index == drag_touch:
 		drag_current = event.position
 		var delta = drag_current - drag_origin
-		if delta.length() < DRAG_DEADZONE:
-			move_vector = Vector2.ZERO
-		else:
-			move_vector = delta.limit_length(DRAG_MAX) / DRAG_MAX
+		move_vector = Vector2.ZERO if delta.length() < DRAG_DEADZONE else delta.limit_length(DRAG_MAX) / DRAG_MAX
 		queue_redraw()
 
-func try_interact():
-	var target = nearest_interaction()
+func handle_tap(pos):
+	var tapped_station = station_at_screen_pos(pos)
+	if tapped_station == "generator":
+		interact_generator()
+		last_tap_time = -10.0
+		return
+	var now = Time.get_ticks_msec() / 1000.0
+	if now - last_tap_time <= DOUBLE_TAP_WINDOW and pos.distance_to(last_tap_pos) <= 80.0:
+		if tapped_station != "": interact_named_station(tapped_station)
+		else: try_interact_near_player()
+		last_tap_time = -10.0
+	else:
+		last_tap_time = now
+		last_tap_pos = pos
+
+func station_at_screen_pos(pos):
+	var best = ""
+	var best_dist = STATION_TAP_RADIUS
+	for name in ["dropoff","washer","dryer","iron","collection","generator","fuel"]:
+		var d = pos.distance_to(interaction_position(name))
+		if d < best_dist:
+			best_dist = d
+			best = name
+	return best
+
+func interact_named_station(target):
+	if target != "generator" and player_pos.distance_to(interaction_position(target)) > INTERACT_DISTANCE:
+		set_status("Move closer before using " + target.to_upper() + ".")
+		return
 	if target == "dropoff": interact_dropoff()
 	elif target == "washer": interact_machine("washer")
 	elif target == "dryer": interact_machine("dryer")
@@ -173,11 +202,15 @@ func try_interact():
 	elif target == "collection": interact_collection()
 	elif target == "generator": interact_generator()
 	elif target == "fuel": interact_fuel()
-	else: set_status("Move closer to a station, counter, generator or fuel point.")
+
+func try_interact_near_player():
+	var target = nearest_interaction()
+	if target == "": set_status("Move closer to a station."); return
+	interact_named_station(target)
 
 func nearest_interaction():
 	var best = ""; var best_dist = INTERACT_DISTANCE
-	for name in ["dropoff","washer","dryer","iron","collection","generator","fuel"]:
+	for name in ["dropoff","washer","dryer","iron","collection","fuel"]:
 		var d = player_pos.distance_to(interaction_position(name))
 		if d < best_dist: best_dist = d; best = name
 	return best
@@ -201,7 +234,7 @@ func interact_machine(machine):
 	elif machine == "dryer": required = "washed"; duration = 4.5
 	elif machine == "iron": required = "dried"; duration = 4.0
 	if carry_stage != required: set_status("Wrong station. This basket needs " + next_destination(carry_stage)); return
-	if not has_power(): set_status("No electricity. Start the GENERATOR or wait for NEPA/PHCN."); return
+	if not has_power(): set_status("No electricity. Tap GENERATOR to start backup power."); return
 	carry_stage = ""; processing_station = machine; process_total = duration; process_left = duration; set_status(station_title(machine) + " started.")
 
 func get_machine_output(machine):
@@ -218,12 +251,14 @@ func set_machine_output(machine, value):
 func interact_collection():
 	if payment_ready:
 		cash += PAYOUT; gross_earned += PAYOUT; served += 1; payment_ready = false; customer_present = false; next_customer_timer = 3.0; set_status("Payment collected: +N%d." % PAYOUT); return
-	if carry_stage == "ironed": carry_stage = ""; payment_ready = true; set_status("Laundry delivered. INTERACT again to collect payment."); return
+	if carry_stage == "ironed": carry_stage = ""; payment_ready = true; set_status("Laundry delivered. Double-tap COLLECTION again for payment."); return
 	set_status("Bring finished laundry here for collection.")
 
 func interact_generator():
-	if generator_on: generator_on = false; set_status("Generator switched OFF."); return
-	if fuel <= 0.0: set_status("Generator has no fuel. Move to BUY FUEL."); return
+	if generator_on:
+		generator_on = false; set_status("Generator switched OFF."); return
+	if fuel <= 0.0:
+		set_status("Generator has no fuel. Double-tap BUY FUEL."); return
 	generator_on = true
 	set_status("Generator ON while NEPA/PHCN is available - fuel is being wasted." if grid_on else "Generator ON. Machines can run again.")
 
@@ -260,14 +295,14 @@ func refresh_hud():
 	objective_label.text = objective_text()
 
 func objective_text():
-	if payment_ready: return "OBJECTIVE: Collect customer payment"
+	if payment_ready: return "READY: CUSTOMER PAYMENT AT COLLECTION"
 	if carry_stage != "": return "CARRYING: " + carry_stage.to_upper() + " -> " + next_destination(carry_stage)
+	if washer_output != "": return "READY: COLLECT FROM WASHER"
+	if dryer_output != "": return "READY: COLLECT FROM DRYER"
+	if iron_output != "": return "READY: COLLECT FROM IRONING"
 	if processing_station != "": return station_title(processing_station) + (": RUNNING" if has_power() else ": PAUSED - NO POWER")
-	if washer_output != "": return "OBJECTIVE: Collect laundry from WASHER"
-	if dryer_output != "": return "OBJECTIVE: Collect laundry from DRYER"
-	if iron_output != "": return "OBJECTIVE: Collect laundry from IRONING"
-	if dirty_waiting: return "OBJECTIVE: Collect dirty laundry at DROP-OFF"
-	return "OBJECTIVE: Run your laundry shop"
+	if dirty_waiting: return "READY: CUSTOMER AT DROP-OFF"
+	return "RUN YOUR LAUNDRY SHOP"
 
 func _draw():
 	draw_rect(Rect2(0,145,720,930), Color("243142"))
@@ -287,18 +322,45 @@ func _draw():
 		draw_rect(Rect2(player_pos.x-24,player_pos.y-54,48,26),Color("8b5a2b")); draw_centered_text(player_pos+Vector2(0,-61),carry_stage.to_upper(),12,Color("111827"))
 	if drag_touch != -1:
 		draw_circle(drag_origin,34,Color(0.2,0.2,0.2,0.22)); draw_line(drag_origin,drag_current,Color(1,1,1,0.28),5.0); draw_circle(drag_current,18,Color(1,1,1,0.35))
+	draw_ready_markers()
+
+func draw_ready_markers():
+	if dirty_waiting: draw_ready_icon(DROP_OFF)
+	if washer_output != "": draw_ready_icon(WASHER)
+	if dryer_output != "": draw_ready_icon(DRYER)
+	if iron_output != "": draw_ready_icon(IRON)
+	if payment_ready: draw_ready_icon(COLLECTION)
+	if not grid_on and not generator_on: draw_power_icon(GENERATOR)
+
+func draw_ready_icon(pos):
+	var p = pos + Vector2(0,-82)
+	draw_circle(p,24,Color("22c55e"))
+	draw_centered_text(p+Vector2(0,7),"!",28,Color.WHITE)
+	draw_line(p+Vector2(0,25),pos+Vector2(0,-55),Color("22c55e"),4.0)
+
+func draw_power_icon(pos):
+	var p = pos + Vector2(0,-70)
+	draw_circle(p,24,Color("facc15"))
+	draw_centered_text(p+Vector2(0,7),"⚡",22,Color("111827"))
 
 func draw_station(center,size,color,label,active):
-	var rect = Rect2(center-size/2.0,size); draw_rect(rect,color); draw_rect(rect,Color("ffffff") if active else Color("111827"),false,4.0); draw_centered_text(center+Vector2(0,5),label,17,Color.WHITE)
+	var rect = Rect2(center-size/2.0,size)
+	draw_rect(rect,color)
+	draw_rect(rect,Color("ffffff") if active else Color("111827"),false,4.0)
+	draw_centered_text(center+Vector2(0,5),label,17,Color.WHITE)
 	if label == "WASHER" and processing_station == "washer": draw_progress(center)
 	elif label == "DRYER" and processing_station == "dryer": draw_progress(center)
 	elif label == "IRONING" and processing_station == "iron": draw_progress(center)
 
 func draw_progress(center):
-	var bar = Rect2(center.x-55,center.y+36,110,11); draw_rect(bar,Color(0.1,0.1,0.1,0.55)); draw_rect(Rect2(bar.position,Vector2(bar.size.x*process_progress(),bar.size.y)),Color("facc15"))
+	var bar = Rect2(center.x-55,center.y+36,110,11)
+	draw_rect(bar,Color(0.1,0.1,0.1,0.55))
+	draw_rect(Rect2(bar.position,Vector2(bar.size.x*process_progress(),bar.size.y)),Color("facc15"))
 
 func draw_centered_text(pos,text,font_size,color):
-	var font = ThemeDB.fallback_font; var width = font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x; draw_string(font,pos-Vector2(width/2.0,0),text,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
+	var font = ThemeDB.fallback_font
+	var width = font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x
+	draw_string(font,pos-Vector2(width/2.0,0),text,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
 
 func interaction_position(key):
 	if key == "dropoff": return DROP_OFF
