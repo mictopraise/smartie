@@ -1,6 +1,11 @@
 [application]
 config/name="Laundry Rush"
+config/icon="res://icon.svg"
 run/main_scene="res://Main.tscn"
+boot_splash/image="res://icon.svg"
+boot_splash/bg_color=Color(0.055, 0.082, 0.13, 1)
+boot_splash/show_image=true
+boot_splash/fullsize=false
 
 [display]
 window/size/viewport_width=720
